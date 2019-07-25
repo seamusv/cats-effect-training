@@ -3,6 +3,7 @@ package cosa.zio2
 import java.io.File
 
 import zio._
+import zio.blocking.Blocking
 import zio.console._
 
 object Main extends App {
@@ -22,12 +23,14 @@ object Main extends App {
 
       program <- app
         .provideSome[Environment] { base =>
-        new FileTransfer with Console {
-          override def fileTransfer: FileTransfer.Service[Any] = FileTransfer.Live.fileTransfer
+          new FileTransfer with Console {
+            override def fileTransfer: FileTransfer.Service[Any] = new FileTransfer.Live {
+              override val blocking: Blocking.Service[Any] = base.blocking
+            }.fileTransfer
 
-          override val console: Console.Service[Any] = base.console
+            override val console: Console.Service[Any] = base.console
+          }
         }
-      }
     } yield program)
       .foldM(
         throwable => putStrLn(s"Error: ${throwable.getMessage}") *> UIO.succeed(1),
