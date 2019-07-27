@@ -19,8 +19,6 @@ object FileTransfer {
 
   trait Live extends FileTransfer with Blocking {
 
-    import blocking._
-
     override def fileTransfer: Service[Any] = new Service[Any] {
       override def copy(origin: File, destination: File): Task[Long] =
         for {
@@ -59,7 +57,7 @@ object FileTransfer {
           }
         }
 
-        effectBlocking{
+        blocking.effectBlocking {
           inner(0L)
         }
       }
